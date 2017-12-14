@@ -1,13 +1,18 @@
+package Agent;
+
+import Utilities.Settings;
+import Utilities.UDPTweaks;
+
 import java.io.IOException;
 import java.net.*;
 
 public class Agent {
-    static DatagramSocket serverSocket = null;
+    public static DatagramSocket serverSocket = null;
 
     public static void main(String[] args) {
         readParameters(args);
         Clock.startClock();
-        startServer(Settings.port);
+        startServer(Settings.agentPort);
     }
 
     private static void readParameters(String[] args) {
@@ -20,16 +25,13 @@ public class Agent {
         }
 
         try {
-            Clock.setInitialClock(Long.parseUnsignedLong(args[0]));
+            Clock.setInitialClock(Long.parseLong(args[0]));
         } catch (NumberFormatException e) {
             System.err.println("Provided initial counter value is too big! Maximum possible value is " + Long.MAX_VALUE);
             System.exit(1);
         }
 
-        if(Integer.parseInt(args[1]) < Settings.timeToWaitForAnswers) {
-            System.err.println("Time period between clock sync must be lower than time to wait for answers ("+Settings.timeToWaitForAnswers+")!");
-            System.exit(1);
-        }
+        setTimePeriod(args[1]);
 
         try {
             Settings.broadcastAddress = InetAddress.getByName(args[2]);
@@ -38,25 +40,23 @@ public class Agent {
             e.printStackTrace();
             System.exit(1);
         }
-
-        Settings.setTimePeriod(Integer.parseInt(args[1]));
     }
 
     @SuppressWarnings("InfiniteLoopStatement")
     private static void startServer(int port) {
         try {
-            serverSocket = new DatagramSocket(port);
+            UDPTweaks.serverSocket = serverSocket = new DatagramSocket(port);
             serverSocket.setBroadcast(true);
         } catch (BindException e) {
             System.err.println("Could not open server socket on port " + port + " because port is already used.");
             System.exit(1);
         } catch (SocketException e) {
             System.err.println("Could not open server socket on port " + port);
-            e.printStackTrace();
+            System.exit(1);
         }
-        System.out.println("Server started on port " + Settings.port);
+        System.out.println("Server started on port " + Settings.agentPort);
 
-        Thread synchronizer = new Thread(new Synchronizer(), "Synchronizer");
+        Thread synchronizer = new Thread(new Synchronizer(), "Agent.Synchronizer");
         synchronizer.start();
 
         while(true) {
@@ -84,9 +84,40 @@ public class Agent {
     }
 
     private static void gotRequestAction(String received, InetAddress address) {
-        switch(received) {
+        String command = received.substring(0,3);
+        String val;
+        switch(command) {
             case "CLK":
                 UDPTweaks.sendMessage(Clock.getClockValue(), address, "CLK");
+                break;
+            case "GCL":
+                UDPTweaks.sendMessage(Clock.getClockValue(), address, "GCL", Settings.controllerPort);
+                break;
+            case "GTP":
+                UDPTweaks.sendMessage(Settings.timePeriodBetweenSync, address, "GTP", Settings.controllerPort);
+                break;
+            case "WCL":
+                val = received.substring(3,received.length());
+                long longVal;
+                try {
+                    longVal = Long.parseLong(val);
+                    if (val.length() < 1) throw new IllegalArgumentException();
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Writing counter cannot be completed because wrong value has been sent");
+                    UDPTweaks.sendMessage("ANS:ACK:ERR", address, Settings.controllerPort);
+                    break;
+                }
+                Clock.setValue(Clock.getClockValue() - longVal);
+                UDPTweaks.sendMessage("ANS:ACK:OK", address, Settings.controllerPort);
+                break;
+            case "WTP":
+                val = received.substring(3,received.length());
+                if(val.length() < 1) {
+                    System.err.println("Writing time period cannot be completed because wrong value has been sent");
+                    break;
+                }
+                boolean wasSet = setTimePeriod(val);
+                UDPTweaks.sendMessage("ANS:ACK:" + (wasSet ? "OK" : "ERR"), address, Settings.controllerPort);
                 break;
         }
     }
@@ -96,10 +127,25 @@ public class Agent {
             case "CLK":
                 Synchronizer.addToClockSum(value);
                 break;
-            case "SET":
-                Clock.setValue(Clock.getClockValue() - Long.parseLong(value));
         }
 
         System.out.println("Received CLK with value " + value);
+    }
+
+    private static boolean setTimePeriod(String timePeriod) {
+        int time = 0;
+        try {
+            time = Integer.parseInt(timePeriod);
+        } catch (NumberFormatException e) {
+            System.err.println("Provided time period is too big!");
+        }
+        if(time < Settings.timeToWaitForAnswers || time <= 0) {
+            System.err.println("Time period between clock sync must be lower than time to wait for answers ("+ Settings.timeToWaitForAnswers+") and positive!");
+            return false;
+        }
+        Settings.setTimePeriodBetweenSync(time);
+
+        System.out.println("Time period set to " + timePeriod);
+        return true;
     }
 }

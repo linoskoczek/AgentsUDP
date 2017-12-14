@@ -1,7 +1,12 @@
+package Agent;
+
+import Utilities.Settings;
+import Utilities.UDPTweaks;
+
 import java.math.BigInteger;
 
 public class Synchronizer implements Runnable {
-    /* Synchronizer is a thread which works in background and synchronizes the clock periodically. */
+    /* Agent.Synchronizer is a thread which works in background and synchronizes the clock periodically. */
 
     private static volatile BigInteger clockSum;
     private static volatile int numberOfAnswers;
@@ -18,7 +23,7 @@ public class Synchronizer implements Runnable {
         while(true) {
             Thread requestor = new Thread(this::sendClockRequests, "Requestor");
             requestor.start();
-            sleep(Settings.timePeriod);
+            sleep(Settings.timePeriodBetweenSync);
         }
     }
 
@@ -36,7 +41,7 @@ public class Synchronizer implements Runnable {
         Clock.setValue(Clock.getClockValue() - average);
     }
 
-    public static void addToClockSum(String clock) {
+    static void addToClockSum(String clock) {
         numberOfAnswers++;
         clockSum = clockSum.add(new BigInteger(clock));
     }

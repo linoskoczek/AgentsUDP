@@ -1,15 +1,20 @@
+package Utilities;
+
+import Agent.Agent;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
 
 public class UDPTweaks {
 
-    public static void sendMessage(String data, InetAddress address) {
+    public static DatagramSocket serverSocket = null;
+
+    public static void sendMessage(String data, InetAddress address, int port) {
         byte[] buffer = data.getBytes();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, Settings.port);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
         try {
-            Agent.serverSocket.send(packet);
-            System.out.println("Sent a message to " + address + " with clk val");
+            serverSocket.send(packet);
         } catch (IOException e) {
             System.err.println("[Single message] Could not send packet to " + address);
             e.printStackTrace();
@@ -18,14 +23,19 @@ public class UDPTweaks {
 
     public static void sendMessage(long clock, InetAddress address, String command) {
         String data = "ANS:" + command + ":" + clock;
-        sendMessage(data, address);
+        sendMessage(data, address, Settings.agentPort);
+    }
+
+    public static void sendMessage(long clock, InetAddress address, String command, int port) {
+        String data = "ANS:" + command + ":" + clock;
+        sendMessage(data, address, port);
     }
 
     public static void sendBroadcastMessage(String data) {
         byte[] buffer = data.getBytes();
 
         DatagramPacket packet = new DatagramPacket(
-                buffer, buffer.length, null, Settings.port);
+                buffer, buffer.length, null, Settings.agentPort);
 
         packet.setAddress(Settings.broadcastAddress);
         try {
