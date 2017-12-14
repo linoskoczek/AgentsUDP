@@ -18,7 +18,6 @@ public class Synchronizer implements Runnable {
         while(true) {
             Thread requestor = new Thread(this::sendClockRequests, "Requestor");
             requestor.start();
-            System.out.println("Synchronization started.");
             sleep(Settings.timePeriod);
         }
     }
@@ -27,12 +26,14 @@ public class Synchronizer implements Runnable {
         clockSum = new BigInteger("0");
         numberOfAnswers = 0;
         UDPTweaks.sendBroadcastMessage("CLK");
-        //clockSum = clockSum.add(new BigInteger(String.valueOf(Clock.getClockValue())));
         sleep(Settings.timeToWaitForAnswers);
 
+        if(numberOfAnswers == 0) {
+            System.err.println("No data received - check your connection.");
+            return;
+        }
         long average = clockSum.divide(BigInteger.valueOf(numberOfAnswers)).longValue();
         Clock.setValue(Clock.getClockValue() - average);
-        System.out.println("Synchronization finished.");
     }
 
     public static void addToClockSum(String clock) {

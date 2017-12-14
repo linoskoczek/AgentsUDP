@@ -1,8 +1,5 @@
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 
 public class Agent {
     static DatagramSocket serverSocket = null;
@@ -14,15 +11,31 @@ public class Agent {
     }
 
     private static void readParameters(String[] args) {
-        if(args.length != 2) {
-            System.err.println("You have to provide 2 arguments: (1) initial counter value (2) time period (in seconds)");
+        if(args.length != 3) {
+            System.err.println("You have to provide 3 arguments:\n" +
+                    "(1) initial counter value\n" +
+                    "(2) time period (in seconds)\n" +
+                    "(3) broadcast IP address of the network");
             System.exit(1);
         }
 
-        Clock.setInitialClock(Integer.parseInt(args[0]));
+        try {
+            Clock.setInitialClock(Long.parseUnsignedLong(args[0]));
+        } catch (NumberFormatException e) {
+            System.err.println("Provided initial counter value is too big! Maximum possible value is " + Long.MAX_VALUE);
+            System.exit(1);
+        }
 
         if(Integer.parseInt(args[1]) < Settings.timeToWaitForAnswers) {
             System.err.println("Time period between clock sync must be lower than time to wait for answers ("+Settings.timeToWaitForAnswers+")!");
+            System.exit(1);
+        }
+
+        try {
+            Settings.broadcastAddress = InetAddress.getByName(args[2]);
+        } catch (UnknownHostException e) {
+            System.err.println("Broadcast is wrong: Unknown host exception.");
+            e.printStackTrace();
             System.exit(1);
         }
 
@@ -34,6 +47,9 @@ public class Agent {
         try {
             serverSocket = new DatagramSocket(port);
             serverSocket.setBroadcast(true);
+        } catch (BindException e) {
+            System.err.println("Could not open server socket on port " + port + " because port is already used.");
+            System.exit(1);
         } catch (SocketException e) {
             System.err.println("Could not open server socket on port " + port);
             e.printStackTrace();
@@ -63,19 +79,27 @@ public class Agent {
 
         if(extended.length == 1)
             gotRequestAction(received, packet.getAddress());
-        else if(extended.length == 2 && extended[0].equals("ANS"))
-            gotAnswerAction(extended[1]);
+        else if(extended.length == 3 && extended[0].equals("ANS"))
+            gotAnswerAction(extended[1], extended[2]);
     }
 
     private static void gotRequestAction(String received, InetAddress address) {
         switch(received) {
             case "CLK":
-                UDPTweaks.sendMessage(Clock.getClockValue(), address);
+                UDPTweaks.sendMessage(Clock.getClockValue(), address, "CLK");
                 break;
         }
     }
 
-    private static void gotAnswerAction(String answer) {
-        Synchronizer.addToClockSum(answer);
+    private static void gotAnswerAction(String command, String value) {
+        switch(command) {
+            case "CLK":
+                Synchronizer.addToClockSum(value);
+                break;
+            case "SET":
+                Clock.setValue(Clock.getClockValue() - Long.parseLong(value));
+        }
+
+        System.out.println("Received CLK with value " + value);
     }
 }

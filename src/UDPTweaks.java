@@ -9,39 +9,36 @@ public class UDPTweaks {
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, Settings.port);
         try {
             Agent.serverSocket.send(packet);
+            System.out.println("Sent a message to " + address + " with clk val");
         } catch (IOException e) {
             System.err.println("[Single message] Could not send packet to " + address);
             e.printStackTrace();
         }
     }
 
-    public static void sendMessage(long clock, InetAddress address) {
-        String data = "ANS:" + clock;
+    public static void sendMessage(long clock, InetAddress address, String command) {
+        String data = "ANS:" + command + ":" + clock;
         sendMessage(data, address);
     }
 
     public static void sendBroadcastMessage(String data) {
         byte[] buffer = data.getBytes();
 
-        List<InetAddress> broadcastAddresses = getBroadcastAddresses();
         DatagramPacket packet = new DatagramPacket(
                 buffer, buffer.length, null, Settings.port);
 
-        broadcastAddresses.stream()
-                .filter(Objects::nonNull)
-                .filter(address -> address.getAddress() != null)
-                .forEach(address -> {
-            packet.setAddress(address);
-            try {
-                Agent.serverSocket.send(packet);
-            } catch (IOException e) {
-                System.err.println("[Broadcast message] Could not send packet to " + address);
-                e.printStackTrace();
-            }
-        });
+        packet.setAddress(Settings.broadcastAddress);
+        try {
+            Agent.serverSocket.send(packet);
+            System.out.println("Sent a broadcast message to " + Settings.broadcastAddress + " with clk val");
+        } catch (IOException e) {
+            System.err.println("[Broadcast message] Could not send packet to " + packet.getAddress());
+            e.printStackTrace();
+        }
 
     }
 
+    /* Additional feauture to create a list of all available broadcast addresses on a machine */
     private static List<InetAddress> getBroadcastAddresses() {
         List<InetAddress> broadcastAddresses = new ArrayList<>();
 

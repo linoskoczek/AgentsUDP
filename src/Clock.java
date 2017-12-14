@@ -18,6 +18,7 @@ public class Clock {
 
     public static void setValue(long value) {
         initialClock -= value;
-        System.out.println("[Clock]" + getClockValue());
+        System.out.println("[CLK] " + getClockValue());
     }
+
 }
