@@ -11,7 +11,7 @@ public class Settings {
     public static InetAddress broadcastAddress = null;
 
     public static void setTimePeriodBetweenSync(int timePeriodBetweenSync) {
-        if(timePeriodBetweenSync <= 0) throw new IllegalArgumentException("Time period must be greater than zero!");
+        if (timePeriodBetweenSync <= 0) throw new IllegalArgumentException("Time period must be greater than zero!");
         Settings.timePeriodBetweenSync = timePeriodBetweenSync;
     }
 

@@ -3,8 +3,9 @@ package Utilities;
 import Agent.Agent;
 
 import java.io.IOException;
-import java.net.*;
-import java.util.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public class UDPTweaks {
 
@@ -46,25 +47,5 @@ public class UDPTweaks {
             e.printStackTrace();
         }
 
-    }
-
-    /* Additional feauture to create a list of all available broadcast addresses on a machine */
-    private static List<InetAddress> getBroadcastAddresses() {
-        List<InetAddress> broadcastAddresses = new ArrayList<>();
-
-        try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            Collections.list(interfaces).forEach(networkInterface -> {
-                List<InterfaceAddress> interfaceAddresses = networkInterface.getInterfaceAddresses();
-                interfaceAddresses.parallelStream()
-                        .filter(Objects::nonNull)
-                        .forEach(interfaceAddress ->
-                                broadcastAddresses.add(interfaceAddress.getBroadcast()));
-            });
-
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        return broadcastAddresses;
     }
 }

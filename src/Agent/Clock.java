@@ -5,7 +5,7 @@ class Clock {
     private static long initialClock;
 
     static void setInitialClock(long _initialClock) {
-        if(_initialClock < 0) throw new IllegalArgumentException("Initial clock value must be bigger or equal zero!");
+        if (_initialClock < 0) throw new IllegalArgumentException("Initial clock value must be bigger or equal zero!");
         initialClock = _initialClock;
     }
 

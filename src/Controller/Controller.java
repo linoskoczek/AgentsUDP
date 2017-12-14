@@ -7,15 +7,15 @@ import java.io.IOException;
 import java.net.*;
 
 public class Controller {
-    static DatagramSocket serverSocket = null;
-    static volatile String lastAnswer;
+    private static DatagramSocket serverSocket = null;
+    private static volatile String lastAnswer;
 
     public static void main(String[] args) {
         readParameters(args);
     }
 
     private static void readParameters(String[] args) {
-        if(args.length != 3 && args.length != 4) {
+        if (args.length != 3 && args.length != 4) {
             System.err.println("You have to provide at least 3 arguments!\n\n" +
                     "For reading CLK value:\n" +
                     "(1) ip address of an agent \n" +
@@ -45,8 +45,7 @@ public class Controller {
                 read(args[2], address);
             } else if (args.length == 4 && args[1].equals("set")) {
                 write(args[2], args[3], address);
-            }
-            else {
+            } else {
                 System.err.println("Given parameters are not correct");
                 System.exit(1);
             }
@@ -61,10 +60,11 @@ public class Controller {
         Thread receiver = new Thread(() -> receive());
         receiver.start();
         UDPTweaks.sendMessage(data, address, Settings.agentPort);
-        while(receiver.isAlive()) {
+        while (receiver.isAlive()) {
             try {
                 Thread.sleep(5);
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
         }
         showAnswer();
     }
@@ -74,23 +74,23 @@ public class Controller {
         Thread receiver = new Thread(() -> receive());
         receiver.start();
         UDPTweaks.sendMessage(data, address, Settings.agentPort);
-        while(receiver.isAlive()) {
+        while (receiver.isAlive()) {
             try {
                 Thread.sleep(5000);
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
         }
         showAnswer();
     }
 
     private static void showAnswer() {
-        if(lastAnswer != null) {
+        if (lastAnswer != null) {
             try {
                 System.out.println("Received answer: " + lastAnswer.split(":")[2]);
-            } catch(ArrayIndexOutOfBoundsException e) {
+            } catch (ArrayIndexOutOfBoundsException e) {
                 System.err.println("Answer is incorrect.");
             }
-        }
-        else {
+        } else {
             System.err.println("Didn't receive answer...");
         }
     }

@@ -16,7 +16,7 @@ public class Agent {
     }
 
     private static void readParameters(String[] args) {
-        if(args.length != 3) {
+        if (args.length != 3) {
             System.err.println("You have to provide 3 arguments:\n" +
                     "(1) initial counter value\n" +
                     "(2) time period (in seconds)\n" +
@@ -59,7 +59,7 @@ public class Agent {
         Thread synchronizer = new Thread(new Synchronizer(), "Agent.Synchronizer");
         synchronizer.start();
 
-        while(true) {
+        while (true) {
             byte[] buffer = new byte[64];
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             try {
@@ -77,16 +77,16 @@ public class Agent {
 
         String[] extended = received.split(":");
 
-        if(extended.length == 1)
+        if (extended.length == 1)
             gotRequestAction(received, packet.getAddress());
-        else if(extended.length == 3 && extended[0].equals("ANS"))
+        else if (extended.length == 3 && extended[0].equals("ANS"))
             gotAnswerAction(extended[1], extended[2]);
     }
 
     private static void gotRequestAction(String received, InetAddress address) {
-        String command = received.substring(0,3);
+        String command = received.substring(0, 3);
         String val;
-        switch(command) {
+        switch (command) {
             case "CLK":
                 UDPTweaks.sendMessage(Clock.getClockValue(), address, "CLK");
                 break;
@@ -97,7 +97,7 @@ public class Agent {
                 UDPTweaks.sendMessage(Settings.timePeriodBetweenSync, address, "GTP", Settings.controllerPort);
                 break;
             case "WCL":
-                val = received.substring(3,received.length());
+                val = received.substring(3, received.length());
                 long longVal;
                 try {
                     longVal = Long.parseLong(val);
@@ -111,8 +111,8 @@ public class Agent {
                 UDPTweaks.sendMessage("ANS:ACK:OK", address, Settings.controllerPort);
                 break;
             case "WTP":
-                val = received.substring(3,received.length());
-                if(val.length() < 1) {
+                val = received.substring(3, received.length());
+                if (val.length() < 1) {
                     System.err.println("Writing time period cannot be completed because wrong value has been sent");
                     break;
                 }
@@ -123,7 +123,7 @@ public class Agent {
     }
 
     private static void gotAnswerAction(String command, String value) {
-        switch(command) {
+        switch (command) {
             case "CLK":
                 Synchronizer.addToClockSum(value);
                 break;
@@ -139,8 +139,8 @@ public class Agent {
         } catch (NumberFormatException e) {
             System.err.println("Provided time period is too big!");
         }
-        if(time < Settings.timeToWaitForAnswers || time <= 0) {
-            System.err.println("Time period between clock sync must be lower than time to wait for answers ("+ Settings.timeToWaitForAnswers+") and positive!");
+        if (time < Settings.timeToWaitForAnswers || time <= 0) {
+            System.err.println("Time period between clock sync must be lower than time to wait for answers (" + Settings.timeToWaitForAnswers + ") and positive!");
             return false;
         }
         Settings.setTimePeriodBetweenSync(time);
