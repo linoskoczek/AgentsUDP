@@ -141,7 +141,7 @@ public class Agent {
         }
         if (time < Settings.timeToWaitForAnswers || time <= 0) {
             System.err.println("Time period between clock sync must be greater than time to wait for answers (" + Settings.timeToWaitForAnswers + ") and positive!");
-            if(Settings.timePeriodBetweenSync == -1) System.exit(1);
+            if (Settings.timePeriodBetweenSync == -1) System.exit(1);
             return false;
         }
         Settings.setTimePeriodBetweenSync(time);

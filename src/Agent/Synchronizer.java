@@ -12,6 +12,14 @@ public class Synchronizer implements Runnable {
     private static volatile int numberOfAnswers;
     private static volatile long syncStart;
 
+    static void addToClockSum(String clock) {
+        numberOfAnswers++;
+        long restOfWaiting = (Settings.timeToWaitForAnswers * 1000 - (System.currentTimeMillis() - syncStart));
+        clockSum = clockSum
+                .add(new BigInteger(clock))
+                .add(new BigInteger(String.valueOf(restOfWaiting)));
+    }
+
     private void sleep(int time) {
         try {
             Thread.sleep(time * 1000);
@@ -42,13 +50,5 @@ public class Synchronizer implements Runnable {
         }
         long average = clockSum.divide(BigInteger.valueOf(numberOfAnswers)).longValue();
         Clock.setValue(Clock.getClockValue() - average);
-    }
-
-    static void addToClockSum(String clock) {
-        numberOfAnswers++;
-        long restOfWaiting = (Settings.timeToWaitForAnswers*1000 - (System.currentTimeMillis() - syncStart));
-        clockSum = clockSum
-                .add(new BigInteger(clock))
-                .add(new BigInteger(String.valueOf(restOfWaiting)));
     }
 }
