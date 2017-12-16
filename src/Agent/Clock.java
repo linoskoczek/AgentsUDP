@@ -17,7 +17,6 @@ class Clock {
         startTime = System.currentTimeMillis();
     }
 
-
     static void setValue(long value) {
         initialClock -= value;
         System.out.println("[CLK] " + getClockValue());

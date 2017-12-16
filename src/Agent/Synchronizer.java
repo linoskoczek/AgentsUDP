@@ -10,11 +10,7 @@ public class Synchronizer implements Runnable {
 
     private static volatile BigInteger clockSum;
     private static volatile int numberOfAnswers;
-
-    static void addToClockSum(String clock) {
-        numberOfAnswers++;
-        clockSum = clockSum.add(new BigInteger(clock));
-    }
+    private static volatile long syncStart;
 
     private void sleep(int time) {
         try {
@@ -34,6 +30,7 @@ public class Synchronizer implements Runnable {
     }
 
     private void sendClockRequests() {
+        syncStart = System.currentTimeMillis();
         clockSum = new BigInteger("0");
         numberOfAnswers = 0;
         UDPTweaks.sendBroadcastMessage("CLK");
@@ -45,5 +42,13 @@ public class Synchronizer implements Runnable {
         }
         long average = clockSum.divide(BigInteger.valueOf(numberOfAnswers)).longValue();
         Clock.setValue(Clock.getClockValue() - average);
+    }
+
+    static void addToClockSum(String clock) {
+        numberOfAnswers++;
+        long restOfWaiting = (Settings.timeToWaitForAnswers*1000 - (System.currentTimeMillis() - syncStart));
+        clockSum = clockSum
+                .add(new BigInteger(clock))
+                .add(new BigInteger(String.valueOf(restOfWaiting)));
     }
 }
