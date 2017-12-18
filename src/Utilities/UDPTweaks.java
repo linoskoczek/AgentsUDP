@@ -9,7 +9,7 @@ import java.net.InetAddress;
 
 public class UDPTweaks {
 
-    public static DatagramSocket serverSocket = null;
+    public static DatagramSocket serverSocket = null; 
 
     public static void sendMessage(String data, InetAddress address, int port) {
         byte[] buffer = data.getBytes();

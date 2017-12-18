@@ -18,7 +18,7 @@ public class Synchronizer implements Runnable {
         clockSum = clockSum
                 .add(new BigInteger(clock))
                 .add(new BigInteger(String.valueOf(restOfWaiting)));
-    }
+    } 
 
     private void sleep(int time) {
         try {

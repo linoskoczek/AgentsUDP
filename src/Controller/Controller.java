@@ -57,7 +57,7 @@ public class Controller {
 
     private static void write(String valueToBeChanged, String newValue, InetAddress address) {
         String data = prepareData("W", valueToBeChanged) + newValue;
-        Thread receiver = new Thread(() -> receive());
+        Thread receiver = new Thread(Controller::receive);
         receiver.start();
         UDPTweaks.sendMessage(data, address, Settings.agentPort);
         while (receiver.isAlive()) {
@@ -71,7 +71,7 @@ public class Controller {
 
     private static void read(String valueToBeRead, InetAddress address) {
         String data = prepareData("G", valueToBeRead);
-        Thread receiver = new Thread(() -> receive());
+        Thread receiver = new Thread(Controller::receive);
         receiver.start();
         UDPTweaks.sendMessage(data, address, Settings.agentPort);
         while (receiver.isAlive()) {
