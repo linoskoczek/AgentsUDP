@@ -12,13 +12,13 @@ public class Synchronizer implements Runnable {
     private static volatile int numberOfAnswers;
     private static volatile long syncStart;
 
-    static void addToClockSum(String clock) {
+    static synchronized void addToClockSum(String clock) {
         numberOfAnswers++;
         long restOfWaiting = (Settings.timeToWaitForAnswers * 1000 - (System.currentTimeMillis() - syncStart));
         clockSum = clockSum
                 .add(new BigInteger(clock))
                 .add(new BigInteger(String.valueOf(restOfWaiting)));
-    } 
+    }
 
     private void sleep(int time) {
         try {
