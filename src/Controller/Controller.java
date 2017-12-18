@@ -76,7 +76,7 @@ public class Controller {
         UDPTweaks.sendMessage(data, address, Settings.agentPort);
         while (receiver.isAlive()) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(2);
             } catch (InterruptedException ignored) {
             }
         }
@@ -115,9 +115,11 @@ public class Controller {
         byte[] buffer = new byte[64];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         try {
-            Controller.serverSocket.setSoTimeout(Settings.timeToWaitForAnswers);
+            Controller.serverSocket.setSoTimeout(Settings.timeToWaitForAnswers * 1000);
             Controller.serverSocket.receive(packet);
             lastAnswer = new String(packet.getData(), 0, packet.getLength());
+        } catch (SocketTimeoutException e) {
+            System.err.println("Timeout.");
         } catch (IOException e) {
             System.err.println("Error while receiving packet.");
         }

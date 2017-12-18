@@ -74,6 +74,7 @@ public class Agent {
 
     private static void receivedAction(DatagramPacket packet) {
         String received = new String(packet.getData(), 0, packet.getLength());
+        System.out.println("[GOT] " + received);
 
         String[] extended = received.split(":");
 
@@ -139,7 +140,7 @@ public class Agent {
         } catch (NumberFormatException e) {
             System.err.println("Provided time period is too big!");
         }
-        if (time < Settings.timeToWaitForAnswers || time <= 0) {
+        if (time <= Settings.timeToWaitForAnswers || time <= 0) {
             System.err.println("Time period between clock sync must be greater than time to wait for answers (" + Settings.timeToWaitForAnswers + ") and positive!");
             if (Settings.timePeriodBetweenSync == -1) System.exit(1);
             return false;
