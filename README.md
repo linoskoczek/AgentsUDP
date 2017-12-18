@@ -1,7 +1,5 @@
 # Agents with clock sync and Controller
 
-_Author of the project: Marcin Węgłowski, s15237_
-
 _**Requirements:**_ 
 - local network
 - Java Runtime Environment 8
