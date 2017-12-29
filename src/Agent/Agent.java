@@ -5,9 +5,19 @@ import Utilities.UDPTweaks;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.List;
 
 public class Agent {
     public static DatagramSocket serverSocket = null;
+    private static List<Integer> localAddresses;
+
+    static {
+        try {
+            localAddresses = UDPTweaks.getLocalAddresses();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) {
         readParameters(args);
@@ -59,8 +69,8 @@ public class Agent {
         Thread synchronizer = new Thread(new Synchronizer(), "Agent.Synchronizer");
         synchronizer.start();
 
+        byte[] buffer = new byte[64];
         while (true) {
-            byte[] buffer = new byte[64];
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
             try {
                 serverSocket.receive(packet);
@@ -74,8 +84,6 @@ public class Agent {
 
     private static void receivedAction(DatagramPacket packet) {
         String received = new String(packet.getData(), 0, packet.getLength());
-        System.out.println("[GOT] " + received);
-
         String[] extended = received.split(":");
 
         if (extended.length == 1)
@@ -89,6 +97,10 @@ public class Agent {
         String val;
         switch (command) {
             case "CLK":
+                int intAddress = UDPTweaks.addressToInt(address);
+                if (localAddresses.contains(intAddress)) {
+                    break;
+                }
                 UDPTweaks.sendMessage(Clock.getClockValue(), address, "CLK");
                 break;
             case "GCL":

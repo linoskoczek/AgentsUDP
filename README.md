@@ -24,20 +24,20 @@ Before you start, you might want to change the default settings. You can find th
 
 - **agentPort** - states for the default port of datagram socket of an Agent,
 - **controllerPort** - states for the default port of a datagram socket of an Agent,
-- **timeToWaitForAnswers** - time to wait for answers on a broadcasted request. The smaller the value is, the more precise calculations of counters are, but be aware, that too small value might lead to ignoring messages from Agents, which's messages were going a bit too long through the network.
+- **timeToWaitForAnswers** - time to wait for answers on a broadcasted request. Be aware, that too small value might lead to ignoring messages from Agents, which's messages were going a bit too long through the network (although a second should be enough).
 
 ## **Agent**
 
 There can be only one agent working at the same time on one machine. This is because Agents have fixed port numbers and you cannot open two or more sockets with same port on one machine.
 
-To start an Agent, you have to know the parameters that it takes:
+To start an Agent, you should know the parameters that it takes:
 
 1. initial counter value for this agent,
 2. time period (in seconds), which denotes the interval between synchronization
 procedure done by an agent,
 3. broadcast address of the network that Agents are connecting to.
 
-Don't panic if you don't remember it. If you run an Agent without parameters, it will remind you about it :)
+Don't panic if you don't remember them. If you run an Agent without parameters, it will give you a short reminder :)
 
 ### Example
 
@@ -50,8 +50,6 @@ In this example, we will run an Agent with initial counter = 0, time period = 5 
 An Agent will start and will immediately send broadcast message to receive counter values of other Agents. It will repeat it every **timeToWaitBetweenSync** second(s).
 An Agent calculates the average of received counter values including it's own and then sets his clock to this calculated average.
 
-_Please notice, that an Agent will send the clock value to itself and it's a conscious approach, because the delay of the clocks (due to it's transporting in the network) should be almost same for all Agents. I believe that this approach is very good for small, local networks._
-
 An Agent can receive few types of messages:
 - **CLK** - request to send back it's clock received using broadcasting by another agent
 - **GCL** - request to send back it's clock received from Controller
@@ -59,13 +57,13 @@ An Agent can receive few types of messages:
 - **WCL** - request to change it's counter value to the one given in a request received from Controller
 - **WTP** - same as above, but requests to change time period instead of counter
 
-**WCL** and **WTP** send back acknowledge message with status _OK_ or _ERR_ depending on the fact whether the value was changes or not.  
+**WCL** and **WTP** send back acknowledge message with status _OK_ or _ERR_ depending on the fact whether the value was changed or not.  
 
 ## **Controller**
 
-As with Agents, you have to have only one Controller turned on at the same time on one machine. It won't be a big problem though, because Controller runs no longer than **timeToWaitForAnswers**. Usually it's a matter of miliseconds. 
+As with Agents, you are able to have only one Controller turned on at the same time on one machine. It won't be a big problem though, because Controller runs no longer than **timeToWaitForAnswers**. Usually it's a matter of miliseconds. 
 
-To start a Controller, you have to know the parameters that it takes.
+To start a Controller, you should know the parameters that it takes.
 #### If you want to _read_ a value
 
 1. IP address of an Agent
@@ -79,7 +77,7 @@ To start a Controller, you have to know the parameters that it takes.
 3. either `counter` or `period`, depending on a value to be read,
 4. new value.
 
-Don’t panic if you don’t remember it. If you run an Controller without parameters, it will remind you about it :)
+Don’t panic if you don’t remember them. If you run an Controller without parameters, it will give you a short reminder :)
 
 ### Example of reading a value
 
@@ -96,15 +94,15 @@ We will set value of a time period between synchronizations for an Agent running
 ### How does it work?
 
 A Controller can send few types of messages:
-- **CLK** - request to send back it's clock
-- **GCL** - request to send back it's clock
-- **GTP** - request to send back it's time period
-- **WCL** - request to change it's counter value to the given one
-- **WTP** - same as above, but requests to change time period instead of counter
+- **CLK** - request to send back it's clock,
+- **GCL** - request to send back it's clock,
+- **GTP** - request to send back it's time period,
+- **WCL** - request to change it's counter value to the given one,
+- **WTP** - same as above, but requests to change time period instead of counter.
 
 A Controller will show the value it wanted to read or the result of a request to change a value: 
 - _OK_ if everything went good,
-- _ERR_ if the request was received, but counter or period cannot be changed to given value
+- _ERR_ if the request was received, but counter or period cannot be changed to given value.
 
 Otherwise, an error will occur showing that it cannot connect to the given Agent or timeout will occur.
 
@@ -117,8 +115,8 @@ Otherwise, an error will occur showing that it cannot connect to the given Agent
 - [x] changing and reading the values of counter and time period via Controller
 
 ## *Bugs and weaknesses*
-- counter sync doesn't look at latency
-- no protection against understandable command floods
+- counter sync doesn't look at latency, completely doesn't care about RTT and other time factors
+- no protection against command floods
 - time in miliseconds stored in long variables - if Agents would have to work for longer time, consider changing miliseconds to smaller (in size of number) unit
 
 _Project was created during process of education on PJATK._

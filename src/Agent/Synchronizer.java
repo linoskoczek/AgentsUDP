@@ -44,9 +44,10 @@ public class Synchronizer implements Runnable {
         UDPTweaks.sendBroadcastMessage("CLK");
         sleep(Settings.timeToWaitForAnswers);
 
-        if (numberOfAnswers == 0) {
-            System.err.println("No data received - check your connection.");
-            return;
+        addToClockSum(String.valueOf(Clock.getClockValue()));
+
+        if (numberOfAnswers < 2) {
+            System.err.println("No other agent connected (or connection error!)");
         }
         long average = clockSum.divide(BigInteger.valueOf(numberOfAnswers)).longValue();
         Clock.setValue(Clock.getClockValue() - average);
